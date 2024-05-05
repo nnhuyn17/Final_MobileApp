@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">LogIn+SignUp</string>
+    <string name="name">Code\nPixelPulse</string>
+
+    <string name="hello">Hi, There</string>
+    <string name="my_name">I am Ngoc Huyen</string>
+    <string name="intro">My focus is on creating user-friendly digital solutions. Explore my portfolio to see my work, and collaborate on exciting projects!</string>
+    <string name="exp"> <b>Experience: </b>3 Years</string>
+    <string name="spe"> <b>Specialty: </b>Product Designer, Developer</string>
+    <string name="addr"> <b>Address: </b>Ho Chi Minh City, VietNam</string>
+    <string name="email"> <b>Email: </b>ngochuyen.info@gmail.com</string>
+    <string name="phone"> <b>Phone: </b>0123456789</string>
+    <string name="free"> <b>Freelance: </b>Available</string>
+
+    <string name="text1">I design seamless, intuitive experiences. My user-centered approach ensures that your digital product is not just beautiful but also highly functional.</string>
+    <string name="text2">My expertise lies in designing, developing, and optimizing digital solutions. Lets build technology that makes a difference.</string>
+    <string name="text3">I create captivating web experiences with elegant design and smooth functionality. Lets bring your website to life!</string>
+    <string name="text4">Whether its iOS, Android, or cross-platform development, I leverage my expertise to build robust, scalable, and high-performance mobile solutions. Lets collaborate to bring your app idea to life and make a meaningful impact in the mobile space.</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="ecommerce">Develop a fully functional e-commerce website with features like user authentication, product browsing, adding items to cart, checkout process, and payment integration.</string>
+    <string name="mobile"> Create a mobile app that allows users to manage their tasks and to-do lists. Include features such as task categorization, priority setting, reminders, and synchronization across devices. </string>
+    <string name="data">Design and implement a data warehouse solution for a company or organization to centralize and analyze their data from different sources.</string>
+
+
+</resources>
