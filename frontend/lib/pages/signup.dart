@@ -6,7 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'login.dart'; // Import your login screen here
 
 class Signup extends StatefulWidget {
-  const Signup({super.key});
+  const Signup({Key? key});
 
   @override
   _SignupScreenState createState() => _SignupScreenState();
@@ -21,8 +21,23 @@ class _SignupScreenState extends State<Signup> {
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  var pathURLL = "https://backend-final-web.onrender.com";
 
   String _selectedGender = 'Female'; // Default gender
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (pickedDate != null) {
+      setState(() {
+        _dobController.text = pickedDate.toString().split(' ')[0];
+      });
+    }
+  }
 
   void _handleSubmit() async {
     // Check if passwords match
@@ -31,41 +46,56 @@ class _SignupScreenState extends State<Signup> {
       return;
     }
 
+    // Construct the data to be sent to the backend
+    final Map<String, dynamic> requestData = {
+      'email': _emailController.text,
+      'full_name': _fullNameController.text,
+      'date_of_birth': _dobController.text,
+      'position': _positionController.text,
+      'company': _companyController.text,
+      'gender': _selectedGender,
+      'phonenumber': _phoneNumberController.text,
+      'password': _passwordController.text,
+    };
+
+    // Continue with the HTTP request
     try {
+
       final response = await http.post(
-        Uri.parse('http://localhost:8081/signUp'), // Replace with your actual endpoint
+        Uri.parse('$pathURLL/signUp'), // Replace with your actual endpoint
         headers: {
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({
-          'email': _emailController.text,
-          'full_name': _fullNameController.text,
-          'date_of_birth': _dobController.text,
-          'position': _positionController.text,
-          'company': _companyController.text,
-          'gender': _selectedGender,
-          'phonenumber': _phoneNumberController.text,
-          'password': _passwordController.text,
-        }),
+        body: jsonEncode(requestData),
       );
 
-      if (response.statusCode == 200) {
+      // Print response body
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 400) {
+        print('hi1'); // Print "hi1" for any error, including email already exists
+        Fluttertoast.showToast(msg: 'Signup failed');
+      } else if (response.statusCode == 401) {
+        print('hi'); // Print "hi" specifically for email already exists
+        Fluttertoast.showToast(msg: 'Email already exists');
+      } else {
+        print('Signup successful');
         Fluttertoast.showToast(msg: 'Signup successful!');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const Login()),
         );
-      } else {
-        Fluttertoast.showToast(msg: 'Signup failed');
-        if (response.statusCode == 401) {
-          Fluttertoast.showToast(msg: 'Email already exists');
-        }
       }
     } catch (error) {
       print('Error during signup: $error');
+      print('Data to be sent to the backend: $requestData');
       Fluttertoast.showToast(msg: 'An error occurred during signup');
+      print('Failed to send request to the backend');
     }
+
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +115,12 @@ class _SignupScreenState extends State<Signup> {
             TextField(controller: _fullNameController),
             const SizedBox(height: 20.0),
             const Text('Date of Birth'),
-            TextField(controller: _dobController, keyboardType: TextInputType.datetime),
+            InkWell(
+              onTap: () => _selectDate(context),
+              child: IgnorePointer(
+                child: TextField(controller: _dobController, keyboardType: TextInputType.datetime),
+              ),
+            ),
             const SizedBox(height: 20.0),
             const Text('Position'),
             TextField(controller: _positionController),
