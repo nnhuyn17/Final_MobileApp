@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/routes/routes.dart';
 import './pages/login.dart'; // Import your login screen here
 
 void main() {
@@ -15,7 +16,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const Login(), // Set the initial page to the login page
+      initialRoute: Login.routeName,
+      routes: routes,
     );
   }
 }
