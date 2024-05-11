@@ -10,6 +10,9 @@ final Map<String, WidgetBuilder> homeRoutesUser = {
       case 1:
         Navigator.pushNamed(context, '/view_booking_user');
         break;
+      case 2:
+        Navigator.pushNamed(context, '/view_profile_user');
+        break;
     }
   }),
 };

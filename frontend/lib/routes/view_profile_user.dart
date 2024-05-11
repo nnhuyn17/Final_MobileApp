@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import '../components/bottom_navigator/bottom_navigator_wrapper_user.dart';
 
-final Map<String, WidgetBuilder> viewBookingRoutesUser = {
-  '/view_booking_user': (context) => BottomNavigationBarWrapper(selectedIndex: 1, onItemTapped: (index) {
+final Map<String, WidgetBuilder> viewProfileRoutesUser = {
+  '/view_profile_user': (context) => BottomNavigationBarWrapper(selectedIndex: 2, onItemTapped: (index) {
     switch (index) {
       case 0:
         Navigator.pushReplacementNamed(context, '/home_user');

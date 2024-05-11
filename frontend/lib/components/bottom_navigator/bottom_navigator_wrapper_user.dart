@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/user/homeuser.dart';
 import 'package:frontend/pages/user/viewbook_user.dart';
-
+import 'package:frontend/pages/user/viewprofile_user.dart';
 class BottomNavigationBarWrapper extends StatelessWidget {
   final int selectedIndex;
   final void Function(int) onItemTapped; // Explicitly specify the type
@@ -27,7 +27,11 @@ class BottomNavigationBarWrapper extends StatelessWidget {
           ),
           BottomNavigationBarItem(
             label: 'Booking',
-            icon: Icon(Icons.account_circle),
+            icon: Icon(Icons.date_range),
+          ),
+          BottomNavigationBarItem(
+            label: 'Me',
+            icon: Icon(Icons.manage_accounts),
           ),
         ],
       ),
@@ -40,6 +44,8 @@ class BottomNavigationBarWrapper extends StatelessWidget {
         return const Homepage();
       case 1:
         return const ViewBookUser();
+      case 2:
+        return const ViewUserProfile();
       default:
         return Container();
     }
