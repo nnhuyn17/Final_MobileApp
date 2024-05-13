@@ -19,6 +19,7 @@ class BottomNavigationBarWrapper extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
         selectedItemColor: Colors.teal.shade200,
+        unselectedItemColor: Theme.of(context).iconTheme.color, // Use default color of device
         onTap: onItemTapped,
         items: const [
           BottomNavigationBarItem(
