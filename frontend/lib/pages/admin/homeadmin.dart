@@ -53,6 +53,7 @@ class _HomepageAdState extends State<HomepageAd> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Admin Homepage'),
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20.0),
@@ -82,7 +83,7 @@ class _HomepageAdState extends State<HomepageAd> {
             SizedBox(height: 20.0),
             Row(
               children: <Widget>[
-                Text('Select Date: '),
+                Text('Select Date: ' , style: TextStyle(fontSize: 18)),
                 InkWell(
                   onTap: () async {
                     final DateTime? picked = await showDatePicker(
@@ -98,8 +99,19 @@ class _HomepageAdState extends State<HomepageAd> {
                       fetchMeetings();
                     }
                   },
-                  child: Text(formatDate(_selectedDate)),
-                ),
+                  child:
+                  Container(
+                    color: Colors.blueAccent, // Set your desired background color here
+                    padding: EdgeInsets.all(8.0), // Optional: Add padding if needed
+                    child: Text(
+                      formatDate(_selectedDate),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                        color: Colors.white, // Set text color to contrast with background
+                      ),
+                    ),
+                  ),                  ),
               ],
             ),
             SizedBox(height: 20.0),

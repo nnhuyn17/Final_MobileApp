@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'viewUser.dart';
-
+import './manageAddress.dart';
 class ViewBookAdmin extends StatefulWidget {
   const ViewBookAdmin({Key? key}) : super(key: key);
   static String routeName = "/view_booking_admin";
@@ -63,13 +63,35 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
     }
   }
 
-  Future<void> handleApproveMeeting(int id) async {
+  Future<void> handleApproveMeetingRequire(int id) async {
     try {
       final response = await http.put(
         Uri.parse(
             'https://backend-final-web.onrender.com/UpdateMeetingByID/$id'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'status': 'approved'}),
+      );
+      final data = json.decode(response.body);
+      print('Meeting request approved: $data');
+      fetchData();
+    } catch (error) {
+      print('Error approving meeting request: $error');
+    }
+  }
+
+  Future<void> handleApproveMeeting(
+      int meetingId, int? addressId, String type, String note) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'https://backend-final-web.onrender.com/createMeetingApprove'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'meeting_id': meetingId,
+          'address_id': addressId,
+          'type': type,
+          'note': note
+        }),
       );
       final data = json.decode(response.body);
       print('Meeting approved: $data');
@@ -96,8 +118,8 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) =>
-              ViewUserAdmin()), // Replace ViewUserScreen() with your actual viewuser screen
+        builder: (context) => ViewUserAdmin(),
+      ),
     );
   }
 
@@ -110,17 +132,140 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
     });
   }
 
+  Future<void> _showApproveDialog(int meetingId) async {
+    List<Map<String, dynamic>> addresses = [];
+
+    try {
+      final response = await http.get(
+          Uri.parse('https://backend-final-web.onrender.com/getAlladdress'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        addresses = List<Map<String, dynamic>>.from(data['address']);
+        print('Addresses : $addresses');
+      } else {
+        print('Failed to fetch addresses. HTTP error: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error fetching addresses: $error');
+    }
+
+    int? selectedAddressId;
+    bool isOnline = true;
+    String note = '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: Text('Approve Meeting'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Text('Select Type:'),
+                      Switch(
+                        value: isOnline,
+                        onChanged: (bool value) {
+                          setState(() {
+                            isOnline = value;
+                          });
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () {
+                          // Navigate to Manager Address page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ManageAddress()),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  if (isOnline)
+                    TextField(
+                      onChanged: (value) {
+                        note = value;
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Enter online meeting note',
+                      ),
+                    ),
+                  if (!isOnline)
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.8, // Take 80% of the dialog width
+                      child: DropdownButton<int>(
+                        isExpanded: true, //Adding this property, does the magic
+                        value: selectedAddressId,
+                        onChanged: (int? newValue) {
+                          setState(() {
+                            selectedAddressId = newValue;
+                          });
+                        },
+                        items: addresses.map<DropdownMenuItem<int>>(
+                              (Map<String, dynamic> address) {
+                            return DropdownMenuItem<int>(
+                              value: address['id'],
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.8, // Take 80% of the dialog width
+                                child: Text(
+                                  address['address'],
+                                ),
+                              ),
+                            );
+                          },
+                        ).toList(),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              ElevatedButton(
+                child: Text('Approve'),
+                onPressed: () async {
+                  if ((isOnline && note.isNotEmpty) ||
+                      (!isOnline && selectedAddressId != null)) {
+                    await handleApproveMeetingRequire(meetingId);
+                    await handleApproveMeeting(meetingId, selectedAddressId,
+                        isOnline ? 'online' : 'offline', note);
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ],
+          );
+
+
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text('View Booking - Admin'), actions: [
+      appBar: AppBar(
+        title: Text('View Booking - Admin'),
+        actions: [
           IconButton(
             icon: Icon(Icons.groups),
             onPressed: () => _navigate(context),
           ),
-        ]),
-        body: SingleChildScrollView(
-            child: Column(
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
@@ -133,51 +278,54 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                      Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Status: '),
-                            DropdownButton<String>(
-                              value: _selectedStatus,
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  _selectedStatus = newValue!;
-                                  fetchData();
-                                });
-                              },
-                              items: <String>[
-                                '',
-                                'approved',
-                                'pending',
-                                'rejected'
-                              ].map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value.isNotEmpty
-                                      ? value.capitalizeFirstLetter()
-                                      : 'All'),
-                                );
-                              }).toList(),
+                            Row(
+                              children: [
+                                Text('Status: '),
+                                DropdownButton<String>(
+                                  value: _selectedStatus,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      _selectedStatus = newValue!;
+                                      fetchData();
+                                    });
+                                  },
+                                  items: <String>[
+                                    '',
+                                    'approved',
+                                    'pending',
+                                    'rejected'
+                                  ].map<DropdownMenuItem<String>>(
+                                      (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value.isNotEmpty
+                                          ? value.capitalizeFirstLetter()
+                                          : 'All'),
+                                    );
+                                  }).toList(),
+                                ),
+                                SizedBox(width: 20),
+                              ],
                             ),
-                            SizedBox(width: 20),
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.arrow_upward),
+                                  onPressed: () =>
+                                      sortDataById(true), // Sort ascending
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.arrow_downward),
+                                  onPressed: () =>
+                                      sortDataById(false), // Sort descending
+                                ),
+                              ],
+                            ),
                           ],
                         ),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.arrow_upward),
-                              onPressed: () => sortDataById(true), // Sort ascending
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.arrow_downward),
-                              onPressed: () => sortDataById(false), // Sort descending
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
                         SizedBox(height: 10),
                         Row(
                           children: [
@@ -239,7 +387,7 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
                                   children: [
                                     ElevatedButton(
                                       onPressed: () =>
-                                          handleApproveMeeting(item['id']),
+                                          _showApproveDialog(item['id']),
                                       child: Text('Approve'),
                                     ),
                                     SizedBox(width: 8.0),
@@ -261,7 +409,9 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
               ),
             ),
           ],
-        )));
+        ),
+      ),
+    );
   }
 }
 
