@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'viewUser.dart';
 import './manageAddress.dart';
+
 class ViewBookAdmin extends StatefulWidget {
   const ViewBookAdmin({Key? key}) : super(key: key);
   static String routeName = "/view_booking_admin";
@@ -132,6 +133,44 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
     });
   }
 
+  Future<List<Map<String, dynamic>>> fetchApprovedMeetingAddress(
+      int meetingId) async {
+    final url =
+        'https://backend-final-web.onrender.com/getAllMeetingApprovebyID/$meetingId';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(data['Data']);
+      } else {
+        print(
+            'Failed to fetch approved meeting address. HTTP error: ${response.statusCode}');
+        return [];
+      }
+    } catch (error) {
+      print('Error fetching approved meeting address: $error');
+      return [];
+    }
+  }
+
+  Future<String> fetchAddressById(int addressId) async {
+    final url =
+        'https://backend-final-web.onrender.com/UpdateAddressByID/$addressId';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['address'] ?? 'Address not found';
+      } else {
+        print('Failed to fetch address. HTTP error: ${response.statusCode}');
+        return 'Address not found';
+      }
+    } catch (error) {
+      print('Error fetching address: $error');
+      return 'Address not found';
+    }
+  }
+
   Future<void> _showApproveDialog(int meetingId) async {
     List<Map<String, dynamic>> addresses = [];
 
@@ -180,7 +219,8 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
                           // Navigate to Manager Address page
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => ManageAddress()),
+                            MaterialPageRoute(
+                                builder: (context) => ManageAddress()),
                           );
                         },
                       ),
@@ -197,7 +237,8 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
                     ),
                   if (!isOnline)
                     SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.8, // Take 80% of the dialog width
+                      width: MediaQuery.of(context).size.width *
+                          0.8, // Take 80% of the dialog width
                       child: DropdownButton<int>(
                         isExpanded: true, //Adding this property, does the magic
                         value: selectedAddressId,
@@ -207,11 +248,12 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
                           });
                         },
                         items: addresses.map<DropdownMenuItem<int>>(
-                              (Map<String, dynamic> address) {
+                          (Map<String, dynamic> address) {
                             return DropdownMenuItem<int>(
                               value: address['id'],
                               child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.8, // Take 80% of the dialog width
+                                width: MediaQuery.of(context).size.width *
+                                    0.8, // Take 80% of the dialog width
                                 child: Text(
                                   address['address'],
                                 ),
@@ -245,8 +287,6 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
               ),
             ],
           );
-
-
         });
       },
     );
@@ -365,46 +405,114 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
                             .shrink(); // Hide item if not matching the filter
                       }
 
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Card(
-                          color: tileColor,
-                          child: ListTile(
-                            title: Text('ID: ${item['id']}'),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Full name: ${item['full_name']}'),
-                                Text('Email: ${item['email']}'),
-                                Text('Position: ${item['position']}'),
-                                Text('Company: ${item['company']}'),
-                                Text('Content: ${item['content']}'),
-                                Text('Time range: ${item['time_range']}'),
-                                Text('Date Meeting: ${item['date']}'),
-                                Text('Status: ${item['status']}'),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                      return FutureBuilder<List<Map<String, dynamic>>>(
+                        future: status == 'approved'
+                            ? fetchApprovedMeetingAddress(item['id'])
+                            : Future.value([]),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          }
+
+                          final approvedMeetings = snapshot.data ?? [];
+
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Card(
+                              color: tileColor,
+                              child: ListTile(
+                                title: Text('ID: ${item['id']}'),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    ElevatedButton(
-                                      onPressed: () =>
-                                          _showApproveDialog(item['id']),
-                                      child: Text('Approve'),
-                                    ),
-                                    SizedBox(width: 8.0),
-                                    ElevatedButton(
-                                      onPressed: () =>
-                                          handleRejectMeeting(item['id']),
-                                      child: Text('Reject'),
+                                    Text('Full name: ${item['full_name']}'),
+                                    Text('Email: ${item['email']}'),
+                                    Text('Position: ${item['position']}'),
+                                    Text('Company: ${item['company']}'),
+                                    Text('Content: ${item['content']}'),
+                                    Text('Time range: ${item['time_range']}'),
+                                    Text('Date Meeting: ${item['date']}'),
+                                    Text('Status: ${item['status']}'),
+                                    if (status == 'approved' &&
+                                        approvedMeetings.isNotEmpty)
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children:
+                                            approvedMeetings.map((meeting) {
+                                          return Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Type: ${meeting['type']}',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              if (meeting['type'] == 'online')
+                                                Text(
+                                                  'Note: ${meeting['note']}',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              if (meeting['type'] ==
+                                                      'offline' &&
+                                                  meeting['address_id'] != null)
+                                                FutureBuilder<String>(
+                                                  future: fetchAddressById(
+                                                      meeting['address_id']),
+                                                  builder: (context,
+                                                      addressSnapshot) {
+                                                    if (addressSnapshot
+                                                            .connectionState ==
+                                                        ConnectionState
+                                                            .waiting) {
+                                                      return Text(
+                                                          'Loading address...');
+                                                    }
+                                                    return Text(
+                                                      'Address: ${addressSnapshot.data}',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    );
+                                                  },
+                                                ),
+                                            ],
+                                          );
+                                        }).toList(),
+                                      ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        if (status != 'approved') ...[
+                                          ElevatedButton(
+                                            onPressed: () =>
+                                                _showApproveDialog(item['id']),
+                                            child: Text('Approve'),
+                                          ),
+                                          SizedBox(width: 8.0),
+                                          ElevatedButton(
+                                            onPressed: () =>
+                                                handleRejectMeeting(item['id']),
+                                            child: Text('Reject'),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       );
                     },
-                  ),
+                  )
                 ],
               ),
             ),
