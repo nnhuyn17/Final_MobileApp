@@ -54,18 +54,7 @@ class _ViewBookingUserState extends State<ViewBookUser> {
     }
   }
 
-  Future<String> _fetchAddressById(int addressId) async {
-    final response = await http.get(Uri.parse(
-        'https://backend-final-web.onrender.com/getAlladdress'));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final address = data['address'].firstWhere((addr) =>
-      addr['id'] == addressId);
-      return address['address'] ?? 'Address not found';
-    } else {
-      throw Exception('Failed to load address');
-    }
-  }
+
 
   Future<void> _handleDeleteMeeting(int id) async {
     try {
@@ -221,30 +210,11 @@ class _ViewBookingUserState extends State<ViewBookUser> {
                                           ),
                                         if (meetingDetail['type'] ==
                                             'offline' &&
-                                            meetingDetail['address_id'] != null)
-                                          FutureBuilder<String>(
-                                            future: _fetchAddressById(
-                                                meetingDetail['address_id']),
-                                            builder: (context,
-                                                addressSnapshot) {
-                                              if (addressSnapshot
-                                                  .connectionState ==
-                                                  ConnectionState.waiting) {
-                                                return Text(
-                                                    'Loading address...');
-                                              }
-                                              if (addressSnapshot.hasError) {
-                                                return Text(
-                                                    'Error loading address');
-                                              }
-                                              return Text(
-                                                'Address: ${addressSnapshot
-                                                    .data}',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight
-                                                        .bold),
-                                              );
-                                            },
+                                            meetingDetail['address'] != null)
+                                          Text(
+                                            'Note: ${meetingDetail['address']}',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
                                           ),
                                       ],
                                     );

@@ -81,7 +81,7 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
   }
 
   Future<void> handleApproveMeeting(
-      int meetingId, int? addressId, String type, String note) async {
+      int meetingId, String address, String type, String note) async {
     try {
       final response = await http.post(
         Uri.parse(
@@ -89,7 +89,7 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'meeting_id': meetingId,
-          'address_id': addressId,
+          'address': address,
           'type': type,
           'note': note
         }),
@@ -153,24 +153,6 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
     }
   }
 
-  Future<String> fetchAddressById(int addressId) async {
-    final url =
-        'https://backend-final-web.onrender.com/UpdateAddressByID/$addressId';
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['address'] ?? 'Address not found';
-      } else {
-        print('Failed to fetch address. HTTP error: ${response.statusCode}');
-        return 'Address not found';
-      }
-    } catch (error) {
-      print('Error fetching address: $error');
-      return 'Address not found';
-    }
-  }
-
   Future<void> _showApproveDialog(int meetingId) async {
     List<Map<String, dynamic>> addresses = [];
 
@@ -188,7 +170,7 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
       print('Error fetching addresses: $error');
     }
 
-    int? selectedAddressId;
+    String? selectedAddress;
     bool isOnline = true;
     String note = '';
 
@@ -210,6 +192,7 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
                         onChanged: (bool value) {
                           setState(() {
                             isOnline = value;
+                            selectedAddress = null; // Clear the selected address when switching
                           });
                         },
                       ),
@@ -239,18 +222,18 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width *
                           0.8, // Take 80% of the dialog width
-                      child: DropdownButton<int>(
-                        isExpanded: true, //Adding this property, does the magic
-                        value: selectedAddressId,
-                        onChanged: (int? newValue) {
+                      child: DropdownButton<String>(
+                        isExpanded: true, // Adding this property, does the magic
+                        value: selectedAddress,
+                        onChanged: (String? newValue) {
                           setState(() {
-                            selectedAddressId = newValue;
+                            selectedAddress = newValue;
                           });
                         },
-                        items: addresses.map<DropdownMenuItem<int>>(
-                          (Map<String, dynamic> address) {
-                            return DropdownMenuItem<int>(
-                              value: address['id'],
+                        items: addresses.map<DropdownMenuItem<String>>(
+                              (Map<String, dynamic> address) {
+                            return DropdownMenuItem<String>(
+                              value: address['address'],
                               child: SizedBox(
                                 width: MediaQuery.of(context).size.width *
                                     0.8, // Take 80% of the dialog width
@@ -277,9 +260,9 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
                 child: Text('Approve'),
                 onPressed: () async {
                   if ((isOnline && note.isNotEmpty) ||
-                      (!isOnline && selectedAddressId != null)) {
+                      (!isOnline && selectedAddress != null)) {
                     await handleApproveMeetingRequire(meetingId);
-                    await handleApproveMeeting(meetingId, selectedAddressId,
+                    await handleApproveMeeting(meetingId, selectedAddress ?? '',
                         isOnline ? 'online' : 'offline', note);
                     Navigator.of(context).pop();
                   }
@@ -338,14 +321,14 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
                                     'pending',
                                     'rejected'
                                   ].map<DropdownMenuItem<String>>(
-                                      (String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value.isNotEmpty
-                                          ? value.capitalizeFirstLetter()
-                                          : 'All'),
-                                    );
-                                  }).toList(),
+                                          (String value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(value.isNotEmpty
+                                              ? value.capitalizeFirstLetter()
+                                              : 'All'),
+                                        );
+                                      }).toList(),
                                 ),
                                 SizedBox(width: 20),
                               ],
@@ -438,48 +421,32 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
                                         approvedMeetings.isNotEmpty)
                                       Column(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        CrossAxisAlignment.start,
                                         children:
-                                            approvedMeetings.map((meeting) {
+                                        approvedMeetings.map((meeting) {
                                           return Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 'Type: ${meeting['type']}',
                                                 style: TextStyle(
                                                     fontWeight:
-                                                        FontWeight.bold),
+                                                    FontWeight.bold),
                                               ),
                                               if (meeting['type'] == 'online')
                                                 Text(
                                                   'Note: ${meeting['note']}',
                                                   style: TextStyle(
                                                       fontWeight:
-                                                          FontWeight.bold),
+                                                      FontWeight.bold),
                                                 ),
-                                              if (meeting['type'] ==
-                                                      'offline' &&
-                                                  meeting['address_id'] != null)
-                                                FutureBuilder<String>(
-                                                  future: fetchAddressById(
-                                                      meeting['address_id']),
-                                                  builder: (context,
-                                                      addressSnapshot) {
-                                                    if (addressSnapshot
-                                                            .connectionState ==
-                                                        ConnectionState
-                                                            .waiting) {
-                                                      return Text(
-                                                          'Loading address...');
-                                                    }
-                                                    return Text(
-                                                      'Address: ${addressSnapshot.data}',
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    );
-                                                  },
+                                              if (meeting['type'] == 'offline')
+                                                Text(
+                                                  'Address: ${meeting['address']}',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                      FontWeight.bold),
                                                 ),
                                             ],
                                           );
@@ -487,7 +454,7 @@ class _ViewBookingAdminState extends State<ViewBookAdmin> {
                                       ),
                                     Row(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      MainAxisAlignment.center,
                                       children: [
                                         if (status != 'approved') ...[
                                           ElevatedButton(
