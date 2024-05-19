@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../../constants/colors.dart';
+
 class HomeBlogAd extends StatefulWidget {
   const HomeBlogAd({Key? key}) : super(key: key);
   static String routeName = "/homeBlog_admin";
@@ -114,7 +116,6 @@ class _HomeBlogAdState extends State<HomeBlogAd> {
         print('Error: $error');
         Fluttertoast.showToast(msg: 'An error occurred');
       }
-
     }
   }
 
@@ -126,54 +127,112 @@ class _HomeBlogAdState extends State<HomeBlogAd> {
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Date Meeting'),
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: () => _selectDate(context),
-                    child: Text(
-                      "${_selectedDate.toLocal()}".split(' ')[0],
-                      style:
-                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Colors.grey,
+              width: 1.0,
+            ),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          padding: EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Date Meeting'),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => _selectDate(context),
+                      child: Text(
+                        "${_selectedDate.toLocal()}".split(' ')[0],
+                        style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20.0),
+              Text('Time'),
+              DropdownButton<String>(
+                value: _timeRange,
+                onChanged: _handleTimeChange,
+                items: <String>[
+                  '9am-11am',
+                  '1pm-3pm',
+                  '3pm-5pm',
+                  '5pm-7pm',
+                  '7pm-9pm',
+                ].map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: 20.0),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey,
+                    width: 1.0,
+                  ),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: TextField(
+                    maxLines: 10,
+                    onChanged: _handleContentChange,
+                    decoration: InputDecoration(
+                      hintText: 'Enter your message...',
+                      border: InputBorder.none,
                     ),
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 20.0),
-            Text('Time'),
-            DropdownButton<String>(
-              value: _timeRange,
-              onChanged: _handleTimeChange,
-              items: <String>[
-                '9am-11am',
-                '1pm-3pm',
-                '3pm-5pm',
-                '5pm-7pm',
-                '7pm-9pm',
-              ].map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 20.0),
-            Text('Message'),
-            TextField(
-              maxLines: 10,
-              onChanged: _handleContentChange,
-            ),
-            SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: _handleSubmit,
-              child: Text('Submit'),
-            ),
-          ],
+              ),
+              SizedBox(height: 20.0),
+              SizedBox(
+                width: double.maxFinite,
+                child: ElevatedButton(
+                  onPressed: _handleSubmit,
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                        CustomColor.bluePrimary),
+                    foregroundColor: MaterialStateProperty.all<Color>(
+                        Colors.white),
+                  ),
+                  child: Text('Submit'),
+                ),
+              ),
+              SizedBox(height: 20.0),
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 300,
+                  ),
+                  child: const Divider(),
+                ),
+              ),
+              SizedBox(height: 15),
+              Center(
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    Image.asset("assets/images/github.png", width: 28),
+                    Image.asset("assets/images/linkedin.png", width: 28),
+                    Image.asset("assets/images/facebook.png", width: 28),
+                    Image.asset("assets/images/instagram.png", width: 28),
+                    Image.asset("assets/images/telegram.png", width: 28),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
