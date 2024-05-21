@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import "./homeBlogadmin.dart";
 
 class HomepageAd extends StatefulWidget {
   const HomepageAd({Key? key}) : super(key: key);
   static String routeName = "/home_admin";
+
   @override
   _HomepageAdState createState() => _HomepageAdState();
 }
@@ -48,6 +50,15 @@ class _HomepageAdState extends State<HomepageAd> {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
+  void _navigate(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomeBlogAd(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,9 +83,7 @@ class _HomepageAdState extends State<HomepageAd> {
             Row(
               children: <Widget>[
                 ElevatedButton(
-                  onPressed: () {
-                    // Navigate to your blog
-                  },
+                  onPressed: () => _navigate(context),
                   child: Text('View your blog'),
                 ),
                 SizedBox(width: 10.0),
@@ -83,7 +92,7 @@ class _HomepageAdState extends State<HomepageAd> {
             SizedBox(height: 20.0),
             Row(
               children: <Widget>[
-                Text('Select Date: ' , style: TextStyle(fontSize: 18)),
+                Text('Select Date: ', style: TextStyle(fontSize: 18)),
                 InkWell(
                   onTap: () async {
                     final DateTime? picked = await showDatePicker(
@@ -99,19 +108,19 @@ class _HomepageAdState extends State<HomepageAd> {
                       fetchMeetings();
                     }
                   },
-                  child:
-                  Container(
-                    color: Colors.blueAccent, // Set your desired background color here
-                    padding: EdgeInsets.all(8.0), // Optional: Add padding if needed
+                  child: Container(
+                    color: Colors.blueAccent,
+                    padding: EdgeInsets.all(8.0),
                     child: Text(
                       formatDate(_selectedDate),
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 18,
-                        color: Colors.white, // Set text color to contrast with background
+                        color: Colors.white,
                       ),
                     ),
-                  ),                  ),
+                  ),
+                ),
               ],
             ),
             SizedBox(height: 20.0),
