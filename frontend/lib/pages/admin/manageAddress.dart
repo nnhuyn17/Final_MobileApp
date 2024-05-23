@@ -23,8 +23,7 @@ class _ManageAddressState extends State<ManageAddress> {
   String? selectedDistrict;
   List<String> wards = [];
   String? selectedWard;
-  TextEditingController otherInfoController =
-  TextEditingController(); // Controller for other information
+  TextEditingController otherInfoController = TextEditingController(); // Controller for other information
 
   @override
   void initState() {
@@ -38,8 +37,7 @@ class _ManageAddressState extends State<ManageAddress> {
       errorMessage = null;
     });
 
-    final url =
-    Uri.parse('https://backend-final-web.onrender.com/getAlladdress');
+    final url = Uri.parse('https://backend-final-web.onrender.com/getAlladdress');
     try {
       final response = await http.get(url);
 
@@ -71,8 +69,7 @@ class _ManageAddressState extends State<ManageAddress> {
 
     // Fetch provinces
     try {
-      final provinceResponse =
-      await http.get(Uri.parse('https://vapi.vnappmob.com/api/province'));
+      final provinceResponse = await http.get(Uri.parse('https://vapi.vnappmob.com/api/province'));
       if (provinceResponse.statusCode == 200) {
         final provinceData = json.decode(provinceResponse.body);
         final List<dynamic> provinceList = provinceData['results'];
@@ -87,8 +84,7 @@ class _ManageAddressState extends State<ManageAddress> {
           provinceIdMap[provinceName] = provinceId;
         }
 
-        final List<String> provinceNames =
-        provinceList.map((e) => e['province_name'].toString()).toList();
+        final List<String> provinceNames = provinceList.map((e) => e['province_name'].toString()).toList();
         setState(() {
           provinces = provinceNames;
         });
@@ -109,8 +105,7 @@ class _ManageAddressState extends State<ManageAddress> {
         wards.clear(); // Clear wards since districts changed
         selectedWard = null; // Reset selected ward
       });
-      final url = Uri.parse(
-          'https://vapi.vnappmob.com/api/province/district/$provinceId');
+      final url = Uri.parse('https://vapi.vnappmob.com/api/province/district/$provinceId');
       try {
         final response = await http.get(url);
         if (response.statusCode == 200) {
@@ -123,8 +118,7 @@ class _ManageAddressState extends State<ManageAddress> {
               districtIdMap[districtName] = districtId;
             }
             setState(() {
-              districts = List<String>.from(
-                  districtList.map((result) => result['district_name']));
+              districts = List<String>.from(districtList.map((result) => result['district_name']));
             });
           } else {
             // Handle no districts found for the province
@@ -147,16 +141,14 @@ class _ManageAddressState extends State<ManageAddress> {
           selectedWard = null; // Reset selected ward
           wards.clear(); // Clear the previous wards
         });
-        final url = Uri.parse(
-            'https://vapi.vnappmob.com/api/province/ward/$districtId');
+        final url = Uri.parse('https://vapi.vnappmob.com/api/province/ward/$districtId');
         try {
           final response = await http.get(url);
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
             if (data['results'] != null) {
               setState(() {
-                wards = List<String>.from(
-                    data['results'].map((result) => result['ward_name']));
+                wards = List<String>.from(data['results'].map((result) => result['ward_name']));
                 print(wards);
               });
             } else {
@@ -172,21 +164,20 @@ class _ManageAddressState extends State<ManageAddress> {
     }
   }
 
-  void updateAddress(int id) {
+  void updateAddress(int id) async {
     print(id);
     // Merge all information to form the updated address
     final otherInformation = otherInfoController.text;
-    final updatedAddress =
-        '$otherInformation, $selectedWard, $selectedDistrict, $selectedProvince';
+    final updatedAddress = '$otherInformation, $selectedWard, $selectedDistrict, $selectedProvince';
     print(updatedAddress);
 
     // Send updated address to backend
-    final url = Uri.parse(
-        'https://backend-final-web.onrender.com/UpdateAddressByID/$id');
+    final url = Uri.parse('https://backend-final-web.onrender.com/UpdateAddressByID/$id');
     final headers = {'Content-Type': 'application/json'};
     final body = json.encode({'address': updatedAddress});
 
-    http.put(url, headers: headers, body: body).then((response) {
+    try {
+      final response = await http.put(url, headers: headers, body: body);
       if (response.statusCode == 200) {
         // Address updated successfully
         fetchData(); // Refresh the address list
@@ -195,12 +186,11 @@ class _ManageAddressState extends State<ManageAddress> {
         print('Failed to update address. Status code: ${response.statusCode}');
         print('Response body: ${response.body}');
       }
-    }).catchError((error) {
+    } catch (error) {
       // Handle error updating address
       print('Error updating address: $error');
-    });
+    }
   }
-
 
   void addNewAddress() {
     // Show popup to add a new address
@@ -312,18 +302,18 @@ class _ManageAddressState extends State<ManageAddress> {
     );
   }
 
-  void addAddress() {
+  void addAddress() async {
     final otherInformation = otherInfoController.text;
-    final newAddress =
-        '$otherInformation, $selectedWard, $selectedDistrict, $selectedProvince';
+    final newAddress = '$otherInformation, $selectedWard, $selectedDistrict, $selectedProvince';
     print(newAddress);
 
     final url = Uri.parse('https://backend-final-web.onrender.com/createAddress');
     final headers = {'Content-Type': 'application/json'};
     final body = json.encode({'address': newAddress});
 
-    http.post(url, headers: headers, body: body).then((response) {
-      if (response.statusCode == 200) {
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      if (response.statusCode == 201) {
         // Address added successfully
         fetchData(); // Refresh the address list
       } else {
@@ -331,12 +321,11 @@ class _ManageAddressState extends State<ManageAddress> {
         print('Failed to add address. Status code: ${response.statusCode}');
         print('Response body: ${response.body}');
       }
-    }).catchError((error) {
+    } catch (error) {
       // Handle error adding address
       print('Error adding address: $error');
-    });
+    }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -384,8 +373,7 @@ class _ManageAddressState extends State<ManageAddress> {
                                       onChanged: (newValue) {
                                         setState(() {
                                           selectedProvince = newValue;
-                                          fetchDistricts(
-                                              provinceIdMap[newValue] ?? '');
+                                          fetchDistricts(provinceIdMap[newValue] ?? '');
                                         });
                                       },
                                       items: provinces.map((String value) {
@@ -497,4 +485,3 @@ class _ManageAddressState extends State<ManageAddress> {
     );
   }
 }
-
