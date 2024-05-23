@@ -40,11 +40,14 @@ class _ContactSectionState extends State<ContactSection> {
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != _selectedDate) {
-      // Update the state when a date is selected
+    if (picked != null && picked.isAfter(DateTime.now())) {
+      // Update the state when a valid date is selected
       setState(() {
         _selectedDate = picked;
       });
+    } else {
+      // Show a toast message if the selected date is not valid
+      Fluttertoast.showToast(msg: 'Please select a date in the future.');
     }
   }
 
@@ -70,20 +73,20 @@ class _ContactSectionState extends State<ContactSection> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmation'),
-          content: Text('Are you sure you want to submit?'),
+          title: const Text('Confirmation'),
+          content: const Text('Are you sure you want to submit?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context, true);
               },
-              child: Text('Yes'),
+              child: const Text('Yes'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context, false);
               },
-              child: Text('No'),
+              child: const Text('No'),
             ),
           ],
         );
@@ -139,7 +142,7 @@ class _ContactSectionState extends State<ContactSection> {
             ),
           ),
           const SizedBox(height: 50),
-          Text('Date Meeting'),
+          const Text('Date Meeting'),
           Row(
             children: [
               Expanded(
@@ -147,14 +150,14 @@ class _ContactSectionState extends State<ContactSection> {
                   onPressed: () => _selectDate(context),
                   child: Text(
                     "${_selectedDate.toLocal()}".split(' ')[0],
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20.0),
-          Text('Time'),
+          const SizedBox(height: 20.0),
+          const Text('Time'),
           DropdownButton<String>(
             value: _timeRange,
             onChanged: _handleTimeChange,
@@ -171,7 +174,7 @@ class _ContactSectionState extends State<ContactSection> {
               );
             }).toList(),
           ),
-          SizedBox(height: 20.0),
+          const SizedBox(height: 20.0),
           Container(
             decoration: BoxDecoration(
               border: Border.all(
@@ -185,15 +188,14 @@ class _ContactSectionState extends State<ContactSection> {
               child: TextField(
                 maxLines: 10,
                 onChanged: _handleContentChange,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Enter your message...',
                   border: InputBorder.none,
                 ),
               ),
             ),
           ),
-
-          SizedBox(height: 20.0),
+          const SizedBox(height: 20.0),
           SizedBox(
             width: double.maxFinite,
             child: ElevatedButton(
@@ -202,10 +204,10 @@ class _ContactSectionState extends State<ContactSection> {
                 backgroundColor: MaterialStateProperty.all<Color>(CustomColor.bluePrimary),
                 foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
               ),
-              child: Text('Submit'),
+              child: const Text('Submit'),
             ),
           ),
-          SizedBox(height: 20.0),
+          const SizedBox(height: 20.0),
           Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(
@@ -214,7 +216,7 @@ class _ContactSectionState extends State<ContactSection> {
               child: const Divider(),
             ),
           ),
-          SizedBox(height: 15),
+          const SizedBox(height: 15),
           Center(
             child: Wrap(
               spacing: 12,

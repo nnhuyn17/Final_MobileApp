@@ -39,10 +39,64 @@ class _SignupScreenState extends State<Signup> {
     }
   }
 
+  bool _isEmailValid(String email) {
+    final RegExp emailRegExp = RegExp(
+      r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+    );
+    return emailRegExp.hasMatch(email);
+  }
+
+  Future<bool> _isEmailExists(String email) async {
+    try {
+      final response = await http.get(Uri.parse('$pathURLL/getAllDemo'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        List accounts = data['accounts'];
+        for (var account in accounts) {
+          if (account['email'] == email) {
+            return true;
+          }
+        }
+      } else {
+        Fluttertoast.showToast(msg: 'Failed to fetch accounts data');
+      }
+    } catch (error) {
+      print('Error fetching accounts data: $error');
+      Fluttertoast.showToast(msg: 'An error occurred while checking email');
+    }
+    return false;
+  }
+
   void _handleSubmit() async {
+    // Check if all fields are filled
+    if (_emailController.text.isEmpty ||
+        _fullNameController.text.isEmpty ||
+        _dobController.text.isEmpty ||
+        _positionController.text.isEmpty ||
+        _companyController.text.isEmpty ||
+        _phoneNumberController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty) {
+      Fluttertoast.showToast(msg: 'Please fill in all fields');
+      return;
+    }
+
+    // Check if the email is valid
+    if (!_isEmailValid(_emailController.text)) {
+      Fluttertoast.showToast(msg: 'Please enter a valid email');
+      return;
+    }
+
     // Check if passwords match
     if (_passwordController.text != _confirmPasswordController.text) {
       Fluttertoast.showToast(msg: 'Passwords do not match');
+      return;
+    }
+
+    // Check if email already exists
+    bool emailExists = await _isEmailExists(_emailController.text);
+    if (emailExists) {
+      Fluttertoast.showToast(msg: 'Email already exists');
       return;
     }
 
@@ -60,7 +114,6 @@ class _SignupScreenState extends State<Signup> {
 
     // Continue with the HTTP request
     try {
-
       final response = await http.post(
         Uri.parse('$pathURLL/signUp'), // Replace with your actual endpoint
         headers: {
@@ -80,10 +133,26 @@ class _SignupScreenState extends State<Signup> {
         Fluttertoast.showToast(msg: 'Email already exists');
       } else {
         print('Signup successful');
-        Fluttertoast.showToast(msg: 'Signup successful!');
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Login()),
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Signup Successful'),
+              content: const Text('Your account has been created successfully.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Login()),
+                    );
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
         );
       }
     } catch (error) {
@@ -92,10 +161,7 @@ class _SignupScreenState extends State<Signup> {
       Fluttertoast.showToast(msg: 'An error occurred during signup');
       print('Failed to send request to the backend');
     }
-
   }
-
-
 
   @override
   Widget build(BuildContext context) {

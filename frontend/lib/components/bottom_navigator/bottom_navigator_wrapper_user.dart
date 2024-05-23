@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:frontend/pages/user/homeuser.dart';
 import 'package:frontend/pages/user/viewbook_user.dart';
 import 'package:frontend/pages/user/viewprofile_user.dart';
+import 'package:frontend/constants/colors.dart';
+
+
 class BottomNavigationBarWrapper extends StatelessWidget {
   final int selectedIndex;
   final void Function(int) onItemTapped; // Explicitly specify the type
@@ -18,7 +21,7 @@ class BottomNavigationBarWrapper extends StatelessWidget {
       body: _getPage(selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
-        selectedItemColor: Colors.teal.shade200,
+        selectedItemColor: CustomColor.bluePrimary,
         unselectedItemColor: Theme.of(context).iconTheme.color, // Use default color of device
         onTap: onItemTapped,
         items: const [

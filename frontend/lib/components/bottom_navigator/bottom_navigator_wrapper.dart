@@ -3,6 +3,7 @@ import 'package:frontend/pages/admin/viewbook_admin.dart';
 import '../../pages/admin/homeadmin.dart';
 import '../../pages/admin/viewprofile_admin.dart';
 import '../../pages/admin/homeBlogadmin.dart';
+import 'package:frontend/constants/colors.dart';
 
 class BottomNavigationBarWrapper extends StatelessWidget {
   final int selectedIndex;
@@ -20,7 +21,7 @@ class BottomNavigationBarWrapper extends StatelessWidget {
       body: _getPage(selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
-        selectedItemColor: Colors.teal.shade200,
+        selectedItemColor: CustomColor.bluePrimary,
         unselectedItemColor: Theme.of(context).iconTheme.color, // Use default color of device
         onTap: onItemTapped,
         items: const [
