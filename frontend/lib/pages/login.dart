@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import '../pages/admin/homeadmin.dart';
 import './user/homeuser.dart';
 import 'signup.dart';
+import 'package:frontend/constants/colors.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -64,7 +65,8 @@ class _LoginScreenState extends State<Login> {
         final String accountId = data['id'].toString();
 
         await _storage.write(key: 'KEY_USERNAME', value: _emailController.text);
-        await _storage.write(key: 'KEY_PASSWORD', value: _passwordController.text);
+        await _storage.write(
+            key: 'KEY_PASSWORD', value: _passwordController.text);
         await _storage.write(key: 'accountId', value: accountId);
         await _storage.write(key: 'currentRole', value: userRole);
         if (userRole == 'user') {
@@ -118,9 +120,10 @@ class _LoginScreenState extends State<Login> {
                     TextFormField(
                       decoration: InputDecoration(
                         labelText: "Username",
-                        labelStyle: TextStyle(color: Color(0xFF13B5A2)),
+                        labelStyle: TextStyle(color: CustomColor.bluePrimary),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFF13B5A2), width: 2),
+                          borderSide: BorderSide(
+                              color: CustomColor.bluePrimary, width: 2),
                         ),
                       ),
                       controller: _emailController,
@@ -130,9 +133,10 @@ class _LoginScreenState extends State<Login> {
                     TextFormField(
                       decoration: InputDecoration(
                         labelText: "Password",
-                        labelStyle: TextStyle(color: Color(0xFF95989A)),
+                        labelStyle: TextStyle(color: CustomColor.bluePrimary),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFF13B5A2), width: 2),
+                          borderSide: BorderSide(
+                              color: CustomColor.bluePrimary, width: 2),
                         ),
                       ),
                       controller: _passwordController,
@@ -151,9 +155,9 @@ class _LoginScreenState extends State<Login> {
                 },
                 title: Text(
                   "Remember me",
-                  style: TextStyle(color: Color(0xFF13B5A2)),
+                  style: TextStyle(color: CustomColor.bluePrimary),
                 ),
-                activeColor: Color(0xFF13B5A2),
+                activeColor: CustomColor.bluePrimary,
               ),
               SizedBox(height: size.height * 0.05),
               Container(
@@ -161,11 +165,45 @@ class _LoginScreenState extends State<Login> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleSubmit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF13B5A2),
-                    textStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                    backgroundColor: CustomColor.bluePrimary,
                     padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                    textStyle: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          8.0), // Optional: if you want rounded corners
+                    ),
+                    elevation: 5, // Optional: for button elevation
+                  ).copyWith(
+                    backgroundColor:
+                        MaterialStateProperty.resolveWith((states) {
+                      if (states.contains(MaterialState.pressed)) {
+                        return CustomColor.bluePrimary
+                            .withOpacity(0.8); // Color when button is pressed
+                      } else if (states.contains(MaterialState.disabled)) {
+                        return Colors.blue; // Color when button is disabled
+                      }
+                      return CustomColor.bluePrimary; // Default color
+                    }),
+                    foregroundColor:
+                        MaterialStateProperty.resolveWith((states) {
+                      if (states.contains(MaterialState.pressed)) {
+                        return Colors.white.withOpacity(
+                            0.8); // Text color when button is pressed
+                      }
+                      return Colors.white; // Default text color
+                    }),
                   ),
-                  child: Text("Sign In"),
+                  child: Text(
+                    "Sign In",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(height: size.height * 0.015),
@@ -182,13 +220,14 @@ class _LoginScreenState extends State<Login> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const Signup()),
+                          MaterialPageRoute(
+                              builder: (context) => const Signup()),
                         );
                       },
                       child: Text(
                         "Sign Up now to get access.",
                         style: TextStyle(
-                          color: Color(0xFF13B5A2),
+                          color: CustomColor.bluePrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
