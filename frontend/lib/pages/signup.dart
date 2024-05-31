@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/gestures.dart';
 import 'login.dart'; // Import your login screen here
+import 'package:frontend/constants/colors.dart'; // Import your custom colors here
 
 class Signup extends StatefulWidget {
   const Signup({Key? key});
@@ -221,7 +222,41 @@ class _SignupScreenState extends State<Signup> {
             const SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: _handleSubmit,
-              child: const Text('Sign Up'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: CustomColor.bluePrimary,
+                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                textStyle: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0), // Optional: if you want rounded corners
+                ),
+                elevation: 5, // Optional: for button elevation
+              ).copyWith(
+                backgroundColor: MaterialStateProperty.resolveWith((states) {
+                  if (states.contains(MaterialState.pressed)) {
+                    return CustomColor.bluePrimary.withOpacity(0.8); // Color when button is pressed
+                  } else if (states.contains(MaterialState.disabled)) {
+                    return Colors.grey; // Color when button is disabled
+                  }
+                  return CustomColor.bluePrimary; // Default color
+                }),
+                foregroundColor: MaterialStateProperty.resolveWith((states) {
+                  if (states.contains(MaterialState.pressed)) {
+                    return Colors.white.withOpacity(0.8); // Text color when button is pressed
+                  }
+                  return Colors.white; // Default text color
+                }),
+              ),
+              child: const Text(
+                'Sign Up',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             const SizedBox(height: 20.0),
             RichText(
